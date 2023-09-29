@@ -2,7 +2,7 @@ const { Schema, model } = require("mongoose");
 const Joi = require("joi");
 const { handleMongooseError } = require("../helpers/handleMongooseError");
 
-const dateRegexp = /^\(\d{3}\) \d{3}-\d{4}$/;
+const telephoneRegexp = /^\(\d{3}\) \d{3}-\d{4}$/;
 
 const contactSchema = new Schema(
   {
@@ -17,12 +17,17 @@ const contactSchema = new Schema(
     phone: {
       type: String,
       // (163) 103-2445
-      match: dateRegexp,
+      match: telephoneRegexp,
       required: true,
     },
     favorite: {
       type: Boolean,
       default: false,
+    },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
     },
   },
   { versionKey: false, timestamps: true }
@@ -30,7 +35,7 @@ const contactSchema = new Schema(
 
 contactSchema.post("save", handleMongooseError);
 
-const joiSchema = Joi.object({
+const contactJoiSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
   phone: Joi.string().required(),
@@ -45,6 +50,6 @@ const Contact = model("contact", contactSchema);
 
 module.exports = {
   Contact,
-  joiSchema,
+  contactJoiSchema,
   favoriteJoiSchema,
 };

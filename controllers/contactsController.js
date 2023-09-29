@@ -1,9 +1,15 @@
-const { Contact } = require("../models/contactsSchema");
+const { Contact } = require("../models/contactModel");
 const { NotFound } = require("http-errors");
-const { ctrlWrapperContacts } = require("../helpers/ctrlWrapperContacts");
+const { ctrlWrapperRoutes } = require("../helpers/ctrlWrapperRoutes");
 
 const allContacts = async (req, res) => {
-  const contacts = await Contact.find({}, "-createdAt -updatedAt");
+  const { _id: owner } = req.user;
+  const { page = 1, limit = 20 } = req.query;
+  const skip = (page - 1) * limit;
+  const contacts = await Contact.find({ owner }, "-createdAt -updatedAt", {
+    skip,
+    limit,
+  }).populate("owner", "_id name email");
   res.json({
     status: "succes",
     code: 200,
@@ -29,7 +35,9 @@ const contactById = async (req, res) => {
 };
 
 const addOneContact = async (req, res) => {
-  const addedContact = await Contact.create(req.body);
+  const { _id: owner } = req.user;
+  const addedContact = await Contact.create({ ...req.body, owner });
+
   res.status(201).json({
     status: "succes",
     code: 201,
@@ -87,10 +95,10 @@ const deleteContactsById = async (req, res, next) => {
 };
 
 module.exports = {
-  allContacts: ctrlWrapperContacts(allContacts),
-  contactById: ctrlWrapperContacts(contactById),
-  addOneContact: ctrlWrapperContacts(addOneContact),
-  updateContactById: ctrlWrapperContacts(updateContactById),
-  updateFavorite: ctrlWrapperContacts(updateFavorite),
-  deleteContactsById: ctrlWrapperContacts(deleteContactsById),
+  allContacts: ctrlWrapperRoutes(allContacts),
+  contactById: ctrlWrapperRoutes(contactById),
+  addOneContact: ctrlWrapperRoutes(addOneContact),
+  updateContactById: ctrlWrapperRoutes(updateContactById),
+  updateFavorite: ctrlWrapperRoutes(updateFavorite),
+  deleteContactsById: ctrlWrapperRoutes(deleteContactsById),
 };

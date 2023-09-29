@@ -1,4 +1,4 @@
-const ctrlWrapperContacts = (ctrl) => {
+const ctrlWrapperRoutes = (ctrl) => {
   const func = async (req, res, next) => {
     try {
       await ctrl(req, res, next);
@@ -10,4 +10,4 @@ const ctrlWrapperContacts = (ctrl) => {
   return func;
 };
 
-module.exports = { ctrlWrapperContacts };
+module.exports = { ctrlWrapperRoutes };

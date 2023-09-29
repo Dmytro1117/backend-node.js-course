@@ -1,4 +1,4 @@
-const validateContacts = (schema) => {
+const validateJoi = (schema) => {
   const func = (req, res, next) => {
     const { error } = schema.validate(req.body);
 
@@ -12,4 +12,4 @@ const validateContacts = (schema) => {
   return func;
 };
 
-module.exports = validateContacts;
+module.exports = validateJoi;
