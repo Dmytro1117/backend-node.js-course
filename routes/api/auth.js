@@ -6,6 +6,7 @@ const {
   curent,
   logout,
   updateSubscription,
+  updateAvatar,
 } = require("../../controllers/authCtrloller");
 const authenticate = require("../../middlewares/authenticate");
 
@@ -14,6 +15,7 @@ const {
   loginJoiSchema,
   subscriptionJoiSchema,
 } = require("../../models/userModel");
+const multerUpload = require("../../middlewares/multerUpload");
 
 const router = express.Router();
 
@@ -26,6 +28,12 @@ router.patch(
   authenticate,
   validateJoi(subscriptionJoiSchema),
   updateSubscription
+);
+router.patch(
+  "/avatars",
+  authenticate,
+  multerUpload.single("avatar"),
+  updateAvatar
 );
 
 module.exports = router;

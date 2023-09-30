@@ -3,7 +3,13 @@ const { ctrlWrapperRoutes } = require("../helpers/ctrlWrapperRoutes");
 const Conflict = require("http-errors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const gravatar = require("gravatar");
+const path = require("path");
+const fs = require("fs/promises");
+const Jimp = require("jimp");
+
 const { SECRET_KEY } = process.env;
+const avatarsDir = path.join(__dirname, "../", "public", "avatars");
 
 const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -13,7 +19,13 @@ const register = async (req, res) => {
   }
 
   const hashBacrypt = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
-  const result = await User.create({ name, email, password: hashBacrypt });
+  const avatarURL = gravatar.url(email);
+  const result = await User.create({
+    name,
+    email,
+    password: hashBacrypt,
+    avatarURL,
+  });
 
   res.status(201).json({
     status: "succes",
@@ -103,10 +115,33 @@ const updateSubscription = async (req, res) => {
   });
 };
 
+const updateAvatar = async (req, res) => {
+  const { _id } = req.user;
+  const { path: tempUpload, originalname } = req.file;
+  const filename = `${_id}_${originalname}`;
+  const resultUpload = path.join(avatarsDir, filename);
+  await fs.rename(tempUpload, resultUpload);
+
+  Jimp.read(resultUpload, (err, image) => {
+    if (err) throw err;
+    image.resize(250, 250).write(resultUpload);
+  });
+
+  const avatarURL = path.join("avatars", filename);
+  await User.findByIdAndUpdate(_id, { avatarURL });
+
+  res.json({
+    status: "succes",
+    code: 200,
+    data: { avatarURL },
+  });
+};
+
 module.exports = {
   register: ctrlWrapperRoutes(register),
   login: ctrlWrapperRoutes(login),
   curent: ctrlWrapperRoutes(curent),
   logout: ctrlWrapperRoutes(logout),
   updateSubscription: ctrlWrapperRoutes(updateSubscription),
+  updateAvatar: ctrlWrapperRoutes(updateAvatar),
 };
