@@ -1,7 +1,7 @@
 const { User } = require("../models/userModel");
 const { ctrlWrapperRoutes } = require("../helpers/ctrlWrapperRoutes");
 const Conflict = require("http-errors");
-const bcrypt = require("bcrypt");
+const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
 const fs = require("fs");
@@ -18,7 +18,7 @@ const register = async (req, res) => {
     throw new Conflict(409, `Sorry, user with  ${email} in use`);
   }
 
-  const hashBacrypt = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+  const hashBacrypt = bcryptjs.hashSync(password, bcryptjs.genSaltSync(10));
   const avatarURL = gravatar.url(email);
   const verificationToken = nanoid();
 
@@ -108,7 +108,7 @@ const login = async (req, res) => {
     throw new Conflict(401, "Email not verified");
   }
 
-  const passwordCompare = bcrypt.compare(password, user.password);
+  const passwordCompare = bcryptjs.compare(password, user.password);
 
   if (!passwordCompare) {
     throw new Conflict(401, `Sorry, user with ${email} or password is wrong`);
